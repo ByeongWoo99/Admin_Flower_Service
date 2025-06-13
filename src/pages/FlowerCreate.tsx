@@ -10,13 +10,6 @@ import { Label } from '@/components/ui/label';
 import { ArrowLeft, Flower, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-interface FlowerCreateRequest {
-  name: string;
-  emotion: string;
-  meaning: string;
-  delFlag?: string;
-}
-
 const API_BASE_URL = 'http://localhost:8080';
 
 const FlowerCreate = () => {
@@ -24,7 +17,7 @@ const FlowerCreate = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  const [formData, setFormData] = useState<FlowerCreateRequest>({
+  const [formData, setFormData] = useState({
     name: '',
     emotion: '',
     meaning: ''
@@ -47,12 +40,12 @@ const FlowerCreate = () => {
 
   // 꽃 생성 mutation
   const createFlowerMutation = useMutation({
-    mutationFn: async (data: { formData: FlowerCreateRequest; imageFile: File }) => {
+    mutationFn: async (data: { formData: typeof formData; imageFile: File }) => {
       const formDataToSend = new FormData();
       formDataToSend.append('name', data.formData.name);
       formDataToSend.append('emotion', data.formData.emotion);
       formDataToSend.append('meaning', data.formData.meaning);
-      formDataToSend.append('image', data.imageFile);
+      formDataToSend.append('imageFile', data.imageFile);
 
       const response = await fetch(`${API_BASE_URL}/admin/flowers`, {
         method: 'POST',
@@ -65,6 +58,7 @@ const FlowerCreate = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['flowers'] });
+      queryClient.invalidateQueries({ queryKey: ['allFlowers'] });
       toast({
         title: "성공",
         description: "새로운 꽃이 성공적으로 추가되었습니다!",
@@ -162,9 +156,10 @@ const FlowerCreate = () => {
               </div>
               
               <div>
-                <Label htmlFor="image" className="text-gray-700">이미지 파일 *</Label>
+                <Label htmlFor="imageFile" className="text-gray-700">이미지 파일 *</Label>
                 <Input
-                  id="image"
+                  id="imageFile"
+                  name="imageFile"
                   type="file"
                   accept="image/*"
                   onChange={handleImageChange}

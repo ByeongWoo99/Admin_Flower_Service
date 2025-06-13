@@ -93,7 +93,7 @@ const FlowerDetail = () => {
             목록으로
           </Button>
           
-          <Link to={`/flowers/${flower.seq}/edit`}>
+          <Link to={`/flowers/${flower.seq}/edit?page=${page}&search=${search}`}>
             <Button className="bg-orange-600 hover:bg-orange-700">
               <Edit className="h-4 w-4 mr-2" />
               수정하기
@@ -129,7 +129,7 @@ const FlowerDetail = () => {
             <div className="flex justify-center">
               <div className="relative w-full max-w-md h-80 bg-orange-50 rounded-lg overflow-hidden shadow-lg">
                 <img
-                  src={flower.imgUrl || '/placeholder.svg'}
+                  src={flower.imgUrl ? `${API_BASE_URL}${flower.imgUrl}` : '/placeholder.svg'}
                   alt={flower.name}
                   className="w-full h-full object-cover"
                   onError={(e) => {

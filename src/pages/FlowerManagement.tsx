@@ -288,41 +288,46 @@ const FlowerManagement = () => {
         {!isLoading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {searchResultFlowers.map((flower) => (
-              <Card key={flower.seq} className="group bg-white/90 backdrop-blur-sm hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 border-orange-100 hover:border-orange-300 rounded-2xl overflow-hidden">
-                <CardHeader className="pb-3 p-0">
-                  <div className="relative h-52 bg-gradient-to-br from-orange-50 to-rose-50 overflow-hidden">
-                    <img
-                      src={flower.imgUrl || '/placeholder.svg'}
-                      alt={flower.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = '/placeholder.svg';
-                      }}
-                    />
-                    {flower.delFlag === 'Y' && (
-                      <div className="absolute inset-0 bg-red-500/30 flex items-center justify-center backdrop-blur-sm">
-                        <Badge variant="destructive" className="text-sm px-3 py-1">삭제됨</Badge>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  </div>
-                  <div className="p-4">
-                    <CardTitle className="text-xl font-bold text-gray-900 mb-2">
-                      {flower.name}
-                    </CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3 px-4">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="bg-gradient-to-r from-orange-100 to-rose-100 text-orange-800 px-3 py-1 rounded-full">
-                      {flower.emotion}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
-                    {flower.meaning}
-                  </p>
-                </CardContent>
+              <Card key={flower.seq} className="group bg-white/90 backdrop-blur-sm hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 border-orange-100 hover:border-orange-300 rounded-2xl overflow-hidden cursor-pointer">
+                <Link 
+                  to={`/flowers/${flower.seq}?page=${currentPage}&search=${searchTerm}`} 
+                  className="block"
+                >
+                  <CardHeader className="pb-3 p-0">
+                    <div className="relative h-52 bg-gradient-to-br from-orange-50 to-rose-50 overflow-hidden">
+                      <img
+                        src={flower.imgUrl ? `${API_BASE_URL}${flower.imgUrl}` : '/placeholder.svg'}
+                        alt={flower.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder.svg';
+                        }}
+                      />
+                      {flower.delFlag === 'Y' && (
+                        <div className="absolute inset-0 bg-red-500/30 flex items-center justify-center backdrop-blur-sm">
+                          <Badge variant="destructive" className="text-sm px-3 py-1">삭제됨</Badge>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </div>
+                    <div className="p-4">
+                      <CardTitle className="text-xl font-bold text-gray-900 mb-2">
+                        {flower.name}
+                      </CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3 px-4">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="bg-gradient-to-r from-orange-100 to-rose-100 text-orange-800 px-3 py-1 rounded-full">
+                        {flower.emotion}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+                      {flower.meaning}
+                    </p>
+                  </CardContent>
+                </Link>
                 <CardFooter className="flex gap-2 pt-4 p-4">
                   <Link to={`/flowers/${flower.seq}?page=${currentPage}&search=${searchTerm}`} className="flex-1">
                     <Button
@@ -334,7 +339,7 @@ const FlowerManagement = () => {
                       상세
                     </Button>
                   </Link>
-                  <Link to={`/flowers/${flower.seq}/edit`} className="flex-1">
+                  <Link to={`/flowers/${flower.seq}/edit?page=${currentPage}&search=${searchTerm}`} className="flex-1">
                     <Button
                       variant="outline"
                       size="sm"
@@ -347,7 +352,11 @@ const FlowerManagement = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleDelete(flower.seq)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleDelete(flower.seq);
+                    }}
                     className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 rounded-lg"
                     disabled={flower.delFlag === 'Y'}
                   >
