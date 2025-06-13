@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +21,9 @@ const API_BASE_URL = 'http://localhost:8080';
 const FlowerDetail = () => {
   const { seq } = useParams<{ seq: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const page = searchParams.get('page') || '0';
+  const search = searchParams.get('search') || '';
 
   const { data: flower, isLoading, error } = useQuery({
     queryKey: ['flower', seq],
@@ -33,6 +36,15 @@ const FlowerDetail = () => {
     },
     enabled: !!seq
   });
+
+  const handleBackToList = () => {
+    const params = new URLSearchParams();
+    params.set('page', page);
+    if (search) {
+      params.set('search', search);
+    }
+    navigate(`/flowers?${params.toString()}`);
+  };
 
   if (isLoading) {
     return (
@@ -72,12 +84,14 @@ const FlowerDetail = () => {
       <div className="max-w-4xl mx-auto">
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-8">
-          <Link to="/flowers">
-            <Button variant="outline" className="border-orange-200 text-orange-700 hover:bg-orange-50">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              목록으로
-            </Button>
-          </Link>
+          <Button 
+            variant="outline" 
+            className="border-orange-200 text-orange-700 hover:bg-orange-50"
+            onClick={handleBackToList}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            목록으로
+          </Button>
           
           <Link to={`/flowers/${flower.seq}/edit`}>
             <Button className="bg-orange-600 hover:bg-orange-700">

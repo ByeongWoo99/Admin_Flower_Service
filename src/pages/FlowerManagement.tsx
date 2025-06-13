@@ -1,6 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -30,14 +31,49 @@ interface PageResponseFlowerDto {
 const API_BASE_URL = 'http://localhost:8080';
 
 const FlowerManagement = () => {
-  const [currentPage, setCurrentPage] = useState(0);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page') || '0'));
   const [pageSize] = useState(12);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  const [allFlowers, setAllFlowers] = useState<FlowerDto[]>([]);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // 꽃 목록 조회
+  // URL 파라미터 업데이트
+  useEffect(() => {
+    const params = new URLSearchParams();
+    params.set('page', currentPage.toString());
+    if (searchTerm) {
+      params.set('search', searchTerm);
+    }
+    setSearchParams(params);
+  }, [currentPage, searchTerm, setSearchParams]);
+
+  // 전체 꽃 목록 조회 (검색용)
+  const { data: allFlowersData } = useQuery({
+    queryKey: ['allFlowers'],
+    queryFn: async (): Promise<FlowerDto[]> => {
+      let allData: FlowerDto[] = [];
+      let page = 0;
+      let hasMore = true;
+
+      while (hasMore) {
+        const response = await fetch(`${API_BASE_URL}/admin/flowers?page=${page}&size=100`);
+        if (!response.ok) {
+          throw new Error('꽃 목록을 불러오는데 실패했습니다');
+        }
+        const data: PageResponseFlowerDto = await response.json();
+        allData = [...allData, ...data.flowers];
+        hasMore = !data.lastPage;
+        page++;
+      }
+      
+      return allData;
+    }
+  });
+
+  // 현재 페이지 꽃 목록 조회
   const { data: flowersData, isLoading, error } = useQuery({
     queryKey: ['flowers', currentPage, pageSize],
     queryFn: async (): Promise<PageResponseFlowerDto> => {
@@ -48,6 +84,13 @@ const FlowerManagement = () => {
       return response.json();
     }
   });
+
+  // 전체 꽃 목록 업데이트
+  useEffect(() => {
+    if (allFlowersData) {
+      setAllFlowers(allFlowersData);
+    }
+  }, [allFlowersData]);
 
   // 꽃 삭제 mutation
   const deleteFlowerMutation = useMutation({
@@ -62,6 +105,7 @@ const FlowerManagement = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['flowers'] });
+      queryClient.invalidateQueries({ queryKey: ['allFlowers'] });
       toast({
         title: "성공",
         description: "꽃이 성공적으로 삭제되었습니다!",
@@ -82,17 +126,32 @@ const FlowerManagement = () => {
     }
   };
 
-  const filteredFlowers = flowersData?.flowers.filter(flower =>
-    flower.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    flower.emotion.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    flower.meaning.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  // 전체 목록에서 검색
+  const filteredFlowers = searchTerm
+    ? allFlowers.filter(flower =>
+        flower.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        flower.emotion.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        flower.meaning.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : flowersData?.flowers || [];
+
+  // 검색 결과 페이지네이션
+  const searchResultPages = Math.ceil(filteredFlowers.length / pageSize);
+  const searchResultFlowers = searchTerm
+    ? filteredFlowers.slice(currentPage * pageSize, (currentPage + 1) * pageSize)
+    : filteredFlowers;
+
+  // 검색어 변경 시 첫 페이지로 이동
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(0);
+  };
 
   const renderPageNumbers = () => {
-    if (!flowersData || flowersData.totalPages <= 1) return null;
+    const totalPages = searchTerm ? searchResultPages : (flowersData?.totalPages || 0);
+    if (totalPages <= 1) return null;
 
     const pages = [];
-    const totalPages = flowersData.totalPages;
     const current = currentPage;
     
     // 첫 페이지
@@ -202,7 +261,7 @@ const FlowerManagement = () => {
           <Input
             placeholder="꽃 이름, 감정, 꽃말로 검색..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-12 h-12 text-lg max-w-md bg-white/90 backdrop-blur-sm border-orange-200 focus:border-orange-400 rounded-xl shadow-sm"
           />
         </div>
@@ -228,7 +287,7 @@ const FlowerManagement = () => {
         {/* 꽃 목록 */}
         {!isLoading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {filteredFlowers.map((flower) => (
+            {searchResultFlowers.map((flower) => (
               <Card key={flower.seq} className="group bg-white/90 backdrop-blur-sm hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 border-orange-100 hover:border-orange-300 rounded-2xl overflow-hidden">
                 <CardHeader className="pb-3 p-0">
                   <div className="relative h-52 bg-gradient-to-br from-orange-50 to-rose-50 overflow-hidden">
@@ -265,7 +324,7 @@ const FlowerManagement = () => {
                   </p>
                 </CardContent>
                 <CardFooter className="flex gap-2 pt-4 p-4">
-                  <Link to={`/flowers/${flower.seq}`} className="flex-1">
+                  <Link to={`/flowers/${flower.seq}?page=${currentPage}&search=${searchTerm}`} className="flex-1">
                     <Button
                       variant="outline"
                       size="sm"
@@ -301,7 +360,7 @@ const FlowerManagement = () => {
         )}
 
         {/* 빈 상태 */}
-        {!isLoading && filteredFlowers.length === 0 && (
+        {!isLoading && searchResultFlowers.length === 0 && (
           <div className="text-center py-16">
             <div className="bg-gradient-to-r from-orange-100 to-rose-100 p-6 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
               <Flower className="h-12 w-12 text-orange-400" />
@@ -322,7 +381,7 @@ const FlowerManagement = () => {
         )}
 
         {/* 개선된 페이지네이션 */}
-        {flowersData && flowersData.totalPages > 1 && (
+        {(searchTerm ? searchResultPages : flowersData?.totalPages || 0) > 1 && (
           <div className="flex justify-center items-center gap-2 mt-12">
             <Button
               variant="outline"
@@ -339,8 +398,8 @@ const FlowerManagement = () => {
             
             <Button
               variant="outline"
-              onClick={() => setCurrentPage(Math.min(flowersData.totalPages - 1, currentPage + 1))}
-              disabled={flowersData.lastPage}
+              onClick={() => setCurrentPage(Math.min((searchTerm ? searchResultPages : flowersData?.totalPages || 0) - 1, currentPage + 1))}
+              disabled={searchTerm ? currentPage >= searchResultPages - 1 : flowersData?.lastPage}
               className="border-orange-200 text-orange-700 hover:bg-orange-50 px-4 py-2"
             >
               다음
@@ -349,9 +408,9 @@ const FlowerManagement = () => {
         )}
 
         {/* 페이지 정보 */}
-        {flowersData && (
+        {(searchTerm ? filteredFlowers.length > 0 : flowersData) && (
           <div className="text-center mt-4 text-sm text-muted-foreground">
-            총 {flowersData.totalElements}개의 꽃 | {currentPage + 1} / {flowersData.totalPages} 페이지
+            총 {searchTerm ? filteredFlowers.length : flowersData?.totalElements}개의 꽃 | {currentPage + 1} / {searchTerm ? searchResultPages : flowersData?.totalPages} 페이지
           </div>
         )}
       </div>

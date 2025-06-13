@@ -14,7 +14,6 @@ interface FlowerCreateRequest {
   name: string;
   emotion: string;
   meaning: string;
-  imgUrl: string;
   delFlag?: string;
 }
 
@@ -28,19 +27,36 @@ const FlowerCreate = () => {
   const [formData, setFormData] = useState<FlowerCreateRequest>({
     name: '',
     emotion: '',
-    meaning: '',
-    imgUrl: ''
+    meaning: ''
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
+
+  // 이미지 파일 선택 핸들러
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   // 꽃 생성 mutation
   const createFlowerMutation = useMutation({
-    mutationFn: async (data: FlowerCreateRequest) => {
+    mutationFn: async (data: { formData: FlowerCreateRequest; imageFile: File }) => {
+      const formDataToSend = new FormData();
+      formDataToSend.append('name', data.formData.name);
+      formDataToSend.append('emotion', data.formData.emotion);
+      formDataToSend.append('meaning', data.formData.meaning);
+      formDataToSend.append('image', data.imageFile);
+
       const response = await fetch(`${API_BASE_URL}/admin/flowers`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
+        body: formDataToSend,
       });
       if (!response.ok) {
         throw new Error('꽃 생성에 실패했습니다');
@@ -66,15 +82,15 @@ const FlowerCreate = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.emotion || !formData.meaning || !formData.imgUrl) {
+    if (!formData.name || !formData.emotion || !formData.meaning || !imageFile) {
       toast({
         title: "입력 오류",
-        description: "모든 필드를 입력해주세요",
+        description: "모든 필드를 입력하고 이미지를 선택해주세요",
         variant: "destructive",
       });
       return;
     }
-    createFlowerMutation.mutate(formData);
+    createFlowerMutation.mutate({ formData, imageFile });
   };
 
   return (
@@ -146,30 +162,25 @@ const FlowerCreate = () => {
               </div>
               
               <div>
-                <Label htmlFor="imgUrl" className="text-gray-700">이미지 URL *</Label>
+                <Label htmlFor="image" className="text-gray-700">이미지 파일 *</Label>
                 <Input
-                  id="imgUrl"
-                  value={formData.imgUrl}
-                  onChange={(e) => setFormData({ ...formData, imgUrl: e.target.value })}
-                  placeholder="이미지 URL을 입력하세요"
-                  type="text"
+                  id="image"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
                   className="border-orange-200 focus:border-orange-400"
                 />
               </div>
 
               {/* 이미지 미리보기 */}
-              {formData.imgUrl && (
+              {imagePreview && (
                 <div>
                   <Label className="text-gray-700">이미지 미리보기</Label>
                   <div className="mt-2 w-full h-48 bg-orange-50 rounded-lg overflow-hidden">
                     <img
-                      src={formData.imgUrl}
+                      src={imagePreview}
                       alt="미리보기"
                       className="w-full h-full object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                      }}
                     />
                   </div>
                 </div>
