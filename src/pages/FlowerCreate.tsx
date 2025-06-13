@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,11 +10,12 @@ import { Label } from '@/components/ui/label';
 import { ArrowLeft, Flower, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-interface FlowerSaveRequest {
+interface FlowerCreateRequest {
   name: string;
   emotion: string;
   meaning: string;
   imgUrl: string;
+  delFlag?: string;
 }
 
 const API_BASE_URL = 'http://localhost:8080';
@@ -22,22 +23,24 @@ const API_BASE_URL = 'http://localhost:8080';
 const FlowerCreate = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
-  const [formData, setFormData] = useState<FlowerSaveRequest>({
+  const [formData, setFormData] = useState<FlowerCreateRequest>({
     name: '',
     emotion: '',
     meaning: '',
     imgUrl: ''
   });
 
+  // 꽃 생성 mutation
   const createFlowerMutation = useMutation({
-    mutationFn: async (newFlower: FlowerSaveRequest) => {
+    mutationFn: async (data: FlowerCreateRequest) => {
       const response = await fetch(`${API_BASE_URL}/admin/flowers`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newFlower),
+        body: JSON.stringify(data),
       });
       if (!response.ok) {
         throw new Error('꽃 생성에 실패했습니다');
@@ -45,6 +48,7 @@ const FlowerCreate = () => {
       return response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['flowers'] });
       toast({
         title: "성공",
         description: "새로운 꽃이 성공적으로 추가되었습니다!",
@@ -54,7 +58,7 @@ const FlowerCreate = () => {
     onError: () => {
       toast({
         title: "오류",
-        description: "꽃 추가에 실패했습니다",
+        description: "꽃 생성에 실패했습니다",
         variant: "destructive",
       });
     }
@@ -97,7 +101,7 @@ const FlowerCreate = () => {
         <Card className="bg-white/90 backdrop-blur-sm border-orange-100 shadow-xl">
           <CardHeader>
             <CardTitle className="text-center text-xl text-gray-900">
-              아름다운 꽃을 추가하세요
+              새로운 꽃 정보 입력
             </CardTitle>
           </CardHeader>
           
@@ -148,7 +152,7 @@ const FlowerCreate = () => {
                   value={formData.imgUrl}
                   onChange={(e) => setFormData({ ...formData, imgUrl: e.target.value })}
                   placeholder="이미지 URL을 입력하세요"
-                  type="url"
+                  type="text"
                   className="border-orange-200 focus:border-orange-400"
                 />
               </div>
@@ -186,7 +190,7 @@ const FlowerCreate = () => {
                   className="flex-1 bg-orange-600 hover:bg-orange-700"
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  {createFlowerMutation.isPending ? '저장 중...' : '저장하기'}
+                  {createFlowerMutation.isPending ? '저장 중...' : '추가하기'}
                 </Button>
               </div>
             </form>

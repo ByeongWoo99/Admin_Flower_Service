@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Flower, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -39,7 +40,8 @@ const FlowerEdit = () => {
     name: '',
     emotion: '',
     meaning: '',
-    imgUrl: ''
+    imgUrl: '',
+    delFlag: 'N'
   });
 
   // 꽃 정보 조회
@@ -222,9 +224,22 @@ const FlowerEdit = () => {
                   value={formData.imgUrl}
                   onChange={(e) => setFormData({ ...formData, imgUrl: e.target.value })}
                   placeholder="이미지 URL을 입력하세요"
-                  type="url"
+                  type="text"
                   className="border-orange-200 focus:border-orange-400"
                 />
+              </div>
+
+              <div>
+                <Label htmlFor="delFlag" className="text-gray-700">상태</Label>
+                <Select value={formData.delFlag} onValueChange={(value) => setFormData({ ...formData, delFlag: value })}>
+                  <SelectTrigger className="border-orange-200 focus:border-orange-400">
+                    <SelectValue placeholder="상태를 선택하세요" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="N">활성</SelectItem>
+                    <SelectItem value="Y">삭제됨</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* 이미지 미리보기 */}
