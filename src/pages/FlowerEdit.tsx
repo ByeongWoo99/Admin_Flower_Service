@@ -20,7 +20,7 @@ interface FlowerUpdateRequest {
   name: string;
   emotion: string;
   meaning: string;
-  imgUrl: string;
+  imgUrl?: string;
   delFlag?: string;
 }
 
@@ -102,7 +102,12 @@ const FlowerEdit = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(data.formData),
+          body: JSON.stringify({
+            name: data.formData.name,
+            emotion: data.formData.emotion,
+            meaning: data.formData.meaning,
+            delFlag: data.formData.delFlag
+          }),
         });
         
         if (!response.ok) {

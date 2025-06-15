@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,6 @@ import { Badge } from '@/components/ui/badge';
 import { Trash2, Edit, Plus, Search, Flower, Eye, Home } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
-import { navigate } from 'react-router-dom';
 
 interface FlowerDto {
   seq: number;
@@ -36,6 +35,7 @@ const FlowerManagement = () => {
   const [pageSize] = useState(12);
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [allFlowers, setAllFlowers] = useState<FlowerDto[]>([]);
+  const navigate = useNavigate();
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
