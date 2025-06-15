@@ -1,15 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Flower, Save } from 'lucide-react';
+import { ArrowLeft, Flower } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { FlowerForm } from '@/components/flower/FlowerForm';
 
 interface FlowerDto {
   seq: number;
@@ -39,15 +36,13 @@ const FlowerEdit = () => {
   const page = searchParams.get('page') || '0';
   const search = searchParams.get('search') || '';
   
-  const [formData, setFormData] = useState<FlowerUpdateRequest>({
+  const [formData, setFormData] = useState({
     name: '',
     emotion: '',
     meaning: '',
-    imgUrl: '',
     delFlag: 'N'
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>('');
 
   // 꽃 정보 조회
   const { data: flower, isLoading, error } = useQuery({
@@ -69,52 +64,39 @@ const FlowerEdit = () => {
         name: flower.name,
         emotion: flower.emotion,
         meaning: flower.meaning,
-        imgUrl: flower.imgUrl,
         delFlag: flower.delFlag
       });
-      // 기존 이미지 미리보기 설정
-      if (flower.imgUrl) {
-        setImagePreview(`${API_BASE_URL}${flower.imgUrl}`);
-      }
     }
   }, [flower]);
-
-  // 이미지 파일 선택 핸들러
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   // 꽃 수정 mutation
   const updateFlowerMutation = useMutation({
     mutationFn: async (data: { formData: FlowerUpdateRequest; imageFile?: File }) => {
       let updatedFormData = { ...data.formData };
       
-      // 새 이미지 파일이 있으면 업로드
+      // 새 이미지 파일이 있으면 먼저 업로드
       if (data.imageFile) {
-        const formDataToSend = new FormData();
-        formDataToSend.append('imageFile', data.imageFile);
+        const uploadFormData = new FormData();
+        const flowerJson = JSON.stringify({
+          name: 'temp',
+          emotion: 'temp',
+          meaning: 'temp'
+        });
+        uploadFormData.append('flower', flowerJson);
+        uploadFormData.append('imageFile', data.imageFile);
         
         const uploadResponse = await fetch(`${API_BASE_URL}/admin/flowers`, {
           method: 'POST',
-          body: formDataToSend,
+          body: uploadFormData,
         });
         
-        if (!uploadResponse.ok) {
-          throw new Error('이미지 업로드에 실패했습니다');
+        if (uploadResponse.ok) {
+          const fileName = `${Date.now()}_${data.imageFile.name}`;
+          updatedFormData.imgUrl = `/images/flower/${fileName}`;
         }
-        
-        // 실제로는 업로드 API를 별도로 만들어야 하지만, 임시로 처리
-        // 새 이미지 파일명으로 URL 생성 (실제 구현에서는 백엔드에서 반환받아야 함)
-        const fileName = `${Date.now()}_${data.imageFile.name}`;
-        updatedFormData.imgUrl = `/flower/${fileName}`;
+      } else {
+        // 기존 이미지 유지
+        updatedFormData.imgUrl = flower?.imgUrl || '';
       }
       
       const response = await fetch(`${API_BASE_URL}/admin/flowers/${seq}`, {
@@ -166,7 +148,16 @@ const FlowerEdit = () => {
       });
       return;
     }
-    updateFlowerMutation.mutate({ formData, imageFile: imageFile || undefined });
+
+    const updateData: FlowerUpdateRequest = {
+      name: formData.name,
+      emotion: formData.emotion,
+      meaning: formData.meaning,
+      imgUrl: flower?.imgUrl || '',
+      delFlag: formData.delFlag
+    };
+
+    updateFlowerMutation.mutate({ formData: updateData, imageFile: imageFile || undefined });
   };
 
   const handleBackToDetail = () => {
@@ -242,108 +233,18 @@ const FlowerEdit = () => {
           </CardHeader>
           
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <Label htmlFor="name" className="text-gray-700">꽃 이름 *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="꽃 이름을 입력하세요"
-                  maxLength={20}
-                  className="border-orange-200 focus:border-orange-400"
-                />
-                <p className="text-sm text-muted-foreground mt-1">최대 20자</p>
-              </div>
-              
-              <div>
-                <Label htmlFor="emotion" className="text-gray-700">감정 *</Label>
-                <Input
-                  id="emotion"
-                  value={formData.emotion}
-                  onChange={(e) => setFormData({ ...formData, emotion: e.target.value })}
-                  placeholder="감정을 입력하세요"
-                  maxLength={10}
-                  className="border-orange-200 focus:border-orange-400"
-                />
-                <p className="text-sm text-muted-foreground mt-1">최대 10자</p>
-              </div>
-              
-              <div>
-                <Label htmlFor="meaning" className="text-gray-700">꽃말 *</Label>
-                <Textarea
-                  id="meaning"
-                  value={formData.meaning}
-                  onChange={(e) => setFormData({ ...formData, meaning: e.target.value })}
-                  placeholder="꽃말을 입력하세요"
-                  rows={4}
-                  className="border-orange-200 focus:border-orange-400"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="imageFile" className="text-gray-700">새 이미지 파일 (선택사항)</Label>
-                <Input
-                  id="imageFile"
-                  name="imageFile"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="border-orange-200 focus:border-orange-400"
-                />
-                <p className="text-sm text-muted-foreground mt-1">파일을 선택하지 않으면 기존 이미지가 유지됩니다</p>
-              </div>
-
-              <div>
-                <Label htmlFor="delFlag" className="text-gray-700">상태</Label>
-                <Select value={formData.delFlag} onValueChange={(value) => setFormData({ ...formData, delFlag: value })}>
-                  <SelectTrigger className="border-orange-200 focus:border-orange-400">
-                    <SelectValue placeholder="상태를 선택하세요" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="N">활성</SelectItem>
-                    <SelectItem value="Y">삭제됨</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* 이미지 미리보기 */}
-              {imagePreview && (
-                <div>
-                  <Label className="text-gray-700">이미지 미리보기</Label>
-                  <div className="mt-2 w-full h-48 bg-orange-50 rounded-lg overflow-hidden">
-                    <img
-                      src={imagePreview}
-                      alt="미리보기"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
-              
-              <div className="flex gap-4 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleBackToDetail}
-                  className="flex-1 border-orange-200 text-orange-700 hover:bg-orange-50"
-                >
-                  취소
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={updateFlowerMutation.isPending}
-                  className="flex-1 bg-orange-600 hover:bg-orange-700"
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  {updateFlowerMutation.isPending ? '저장 중...' : '수정하기'}
-                </Button>
-              </div>
-            </form>
+            <FlowerForm
+              formData={formData}
+              setFormData={setFormData}
+              imageFile={imageFile}
+              setImageFile={setImageFile}
+              onSubmit={handleSubmit}
+              isSubmitting={updateFlowerMutation.isPending}
+              submitButtonText="수정하기"
+              onCancel={handleBackToDetail}
+              isEdit={true}
+              existingImageUrl={flower?.imgUrl ? `${API_BASE_URL}${flower.imgUrl}` : undefined}
+            />
           </CardContent>
         </Card>
       </div>
