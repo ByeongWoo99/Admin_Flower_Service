@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
@@ -72,45 +71,45 @@ const FlowerEdit = () => {
   // 꽃 수정 mutation
   const updateFlowerMutation = useMutation({
     mutationFn: async (data: { formData: FlowerUpdateRequest; imageFile?: File }) => {
-      let updatedFormData = { ...data.formData };
-      
-      // 새 이미지 파일이 있으면 먼저 업로드
+      // 새 이미지 파일이 있으면 multipart/form-data로 전송
       if (data.imageFile) {
-        const uploadFormData = new FormData();
+        const formData = new FormData();
+        
+        // flower 정보를 JSON 문자열로 변환하여 전송
         const flowerJson = JSON.stringify({
-          name: 'temp',
-          emotion: 'temp',
-          meaning: 'temp'
-        });
-        uploadFormData.append('flower', flowerJson);
-        uploadFormData.append('imageFile', data.imageFile);
-        
-        const uploadResponse = await fetch(`${API_BASE_URL}/admin/flowers`, {
-          method: 'POST',
-          body: uploadFormData,
+          name: data.formData.name,
+          emotion: data.formData.emotion,
+          meaning: data.formData.meaning,
+          delFlag: data.formData.delFlag
         });
         
-        if (uploadResponse.ok) {
-          const fileName = `${Date.now()}_${data.imageFile.name}`;
-          updatedFormData.imgUrl = `/images/flower/${fileName}`;
+        formData.append('flower', flowerJson);
+        formData.append('imageFile', data.imageFile);
+        
+        const response = await fetch(`${API_BASE_URL}/admin/flowers/${seq}`, {
+          method: 'PATCH',
+          body: formData,
+        });
+        
+        if (!response.ok) {
+          throw new Error('꽃 수정에 실패했습니다');
         }
+        return response.json();
       } else {
-        // 기존 이미지 유지
-        updatedFormData.imgUrl = flower?.imgUrl || '';
+        // 이미지 파일이 없으면 JSON으로 전송
+        const response = await fetch(`${API_BASE_URL}/admin/flowers/${seq}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data.formData),
+        });
+        
+        if (!response.ok) {
+          throw new Error('꽃 수정에 실패했습니다');
+        }
+        return response.json();
       }
-      
-      const response = await fetch(`${API_BASE_URL}/admin/flowers/${seq}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedFormData),
-      });
-      
-      if (!response.ok) {
-        throw new Error('꽃 수정에 실패했습니다');
-      }
-      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['flower', seq] });
@@ -153,11 +152,14 @@ const FlowerEdit = () => {
       name: formData.name,
       emotion: formData.emotion,
       meaning: formData.meaning,
-      imgUrl: flower?.imgUrl || '',
       delFlag: formData.delFlag
     };
 
-    updateFlowerMutation.mutate({ formData: updateData, imageFile: imageFile || undefined });
+    // imgUrl은 새 이미지가 있을 때만 백엔드에서 처리됨
+    updateFlowerMutation.mutate({ 
+      formData: updateData, 
+      imageFile: imageFile || undefined 
+    });
   };
 
   const handleBackToDetail = () => {

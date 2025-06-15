@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Trash2, Edit, Plus, Search, Flower, Eye, Home } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
+import { navigate } from 'react-router-dom';
 
 interface FlowerDto {
   seq: number;
@@ -288,8 +289,8 @@ const FlowerManagement = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {searchResultFlowers.map((flower) => (
               <Card key={flower.seq} className="group bg-white/90 backdrop-blur-sm hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 border-orange-100 hover:border-orange-300 rounded-2xl overflow-hidden cursor-pointer">
-                <Link 
-                  to={`/flowers/${flower.seq}?page=${currentPage}&search=${searchTerm}`} 
+                <div 
+                  onClick={() => navigate(`/flowers/${flower.seq}?page=${currentPage}&search=${searchTerm}`)}
                   className="block"
                 >
                   <CardHeader className="pb-3 p-0">
@@ -326,28 +327,32 @@ const FlowerManagement = () => {
                       {flower.meaning}
                     </p>
                   </CardContent>
-                </Link>
+                </div>
                 <CardFooter className="flex gap-2 pt-4 p-4">
-                  <Link to={`/flowers/${flower.seq}?page=${currentPage}&search=${searchTerm}`} className="flex-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full border-orange-200 text-orange-700 hover:bg-orange-50 rounded-lg"
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      상세
-                    </Button>
-                  </Link>
-                  <Link to={`/flowers/${flower.seq}/edit?page=${currentPage}&search=${searchTerm}`} className="flex-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full border-orange-200 text-orange-700 hover:bg-orange-50 rounded-lg"
-                    >
-                      <Edit className="h-4 w-4 mr-1" />
-                      수정
-                    </Button>
-                  </Link>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/flowers/${flower.seq}?page=${currentPage}&search=${searchTerm}`);
+                    }}
+                    className="flex-1 border-orange-200 text-orange-700 hover:bg-orange-50 rounded-lg"
+                  >
+                    <Eye className="h-4 w-4 mr-1" />
+                    상세
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/flowers/${flower.seq}/edit?page=${currentPage}&search=${searchTerm}`);
+                    }}
+                    className="flex-1 border-orange-200 text-orange-700 hover:bg-orange-50 rounded-lg"
+                  >
+                    <Edit className="h-4 w-4 mr-1" />
+                    수정
+                  </Button>
                   <Button
                     variant="outline"
                     size="sm"

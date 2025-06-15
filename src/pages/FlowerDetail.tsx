@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -134,6 +135,7 @@ const FlowerDetail = () => {
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.src = '/placeholder.svg';
+                    console.log('Image load failed, using placeholder');
                   }}
                 />
               </div>
