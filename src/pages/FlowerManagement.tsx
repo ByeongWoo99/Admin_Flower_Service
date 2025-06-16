@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -30,11 +30,15 @@ interface PageResponseFlowerDto {
 const API_BASE_URL = 'http://localhost:8080';
 
 const FlowerManagement = () => {
-  const [currentPage, setCurrentPage] = useState(0);
-  const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [filteredFlowers, setFilteredFlowers] = useState<FlowerDto[]>([]);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  // URL에서 현재 페이지 가져오기
+  const currentPage = parseInt(searchParams.get('page') || '0');
 
   // 꽃 목록 조회 (백엔드 API에 맞춰 page, size만 사용)
   const { data: flowerData, isLoading, error } = useQuery({
@@ -62,12 +66,36 @@ const FlowerManagement = () => {
 
   // 페이지 변경 핸들러
   const handlePageClick = (selectedPage: number) => {
-    setCurrentPage(selectedPage);
+    const params = new URLSearchParams();
+    params.set('page', selectedPage.toString());
+    if (searchTerm) {
+      params.set('search', searchTerm);
+    }
+    setSearchParams(params);
   };
 
   // 검색어 변경 핸들러
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
+    const newSearchTerm = e.target.value;
+    setSearchTerm(newSearchTerm);
+    
+    // 검색어 변경 시 URL 업데이트
+    const params = new URLSearchParams();
+    params.set('page', '0'); // 검색 시 첫 페이지로 이동
+    if (newSearchTerm) {
+      params.set('search', newSearchTerm);
+    }
+    setSearchParams(params);
+  };
+
+  // 꽃 카드 클릭 핸들러 (상세 페이지로 이동)
+  const handleFlowerClick = (seq: number) => {
+    const params = new URLSearchParams();
+    params.set('page', currentPage.toString());
+    if (searchTerm) {
+      params.set('search', searchTerm);
+    }
+    navigate(`/flowers/${seq}?${params.toString()}`);
   };
 
   // 꽃 삭제 mutation
@@ -98,7 +126,8 @@ const FlowerManagement = () => {
     }
   });
 
-  const handleDelete = (seq: number) => {
+  const handleDelete = (e: React.MouseEvent, seq: number) => {
+    e.stopPropagation(); // 카드 클릭 이벤트 방지
     deleteFlowerMutation.mutate(seq);
   };
 
@@ -141,7 +170,8 @@ const FlowerManagement = () => {
           {displayFlowers.map((flower) => (
             <Card 
               key={flower.seq} 
-              className="bg-white/90 backdrop-blur-sm border-orange-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              className="bg-white/90 backdrop-blur-sm border-orange-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer"
+              onClick={() => handleFlowerClick(flower.seq)}
             >
               <CardHeader className="pb-3">
                 <div className="w-full h-48 bg-orange-50 rounded-lg overflow-hidden">
@@ -180,6 +210,7 @@ const FlowerManagement = () => {
                 <Link 
                   to={`/flowers/${flower.seq}?page=${currentPage}&search=${searchTerm}`}
                   className="flex-1"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <Button 
                     variant="outline" 
@@ -194,6 +225,7 @@ const FlowerManagement = () => {
                 <Link 
                   to={`/flowers/${flower.seq}/edit?page=${currentPage}&search=${searchTerm}`}
                   className="flex-1"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <Button 
                     variant="outline" 
@@ -208,7 +240,7 @@ const FlowerManagement = () => {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  onClick={() => handleDelete(flower.seq)}
+                  onClick={(e) => handleDelete(e, flower.seq)}
                   disabled={deleteFlowerMutation.isPending}
                   className="flex-1 border-red-200 text-red-700 hover:bg-red-50"
                 >

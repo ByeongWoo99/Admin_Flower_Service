@@ -62,12 +62,7 @@ const FlowerDetail = () => {
       });
       
       // 목록으로 돌아가기
-      const params = new URLSearchParams();
-      params.set('page', page);
-      if (search) {
-        params.set('search', search);
-      }
-      navigate(`/flowers?${params.toString()}`);
+      handleBackToList();
     },
     onError: () => {
       toast({
@@ -80,11 +75,15 @@ const FlowerDetail = () => {
 
   const handleBackToList = () => {
     const params = new URLSearchParams();
-    params.set('page', page);
+    if (page !== '0') {
+      params.set('page', page);
+    }
     if (search) {
       params.set('search', search);
     }
-    navigate(`/flowers?${params.toString()}`);
+    
+    const queryString = params.toString();
+    navigate(`/flowers${queryString ? `?${queryString}` : ''}`);
   };
 
   const handleDelete = () => {
@@ -103,7 +102,7 @@ const FlowerDetail = () => {
             <Flower className="h-16 w-16 text-orange-400 mx-auto mb-6" />
             <h1 className="text-3xl font-bold text-gray-800 mb-4">꽃 정보를 불러올 수 없습니다</h1>
             <p className="text-gray-600 mb-8">요청하신 꽃을 찾을 수 없어요</p>
-            <Button onClick={() => navigate('/flowers')} className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-lg shadow-lg">
+            <Button onClick={handleBackToList} className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-lg shadow-lg">
               <Heart className="h-4 w-4 mr-2" />
               꽃 목록으로 돌아가기
             </Button>
