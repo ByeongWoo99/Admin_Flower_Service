@@ -39,11 +39,15 @@ const FlowerManagement = () => {
         throw new Error('꽃 정보를 불러오는데 실패했습니다');
       }
       return response.json();
-    },
-    onSuccess: (data) => {
-      setPageCount(Math.ceil(data.totalCount / 12));
     }
   });
+
+  // Update page count when data changes
+  useEffect(() => {
+    if (flowers) {
+      setPageCount(Math.ceil(flowers.totalCount / 12));
+    }
+  }, [flowers]);
 
   // 페이지 변경 핸들러
   const handlePageClick = (selectedPage: number) => {
