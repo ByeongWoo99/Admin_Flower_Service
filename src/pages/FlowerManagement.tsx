@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { Badge } from '@/components/ui/badge';
 import { Input } from "@/components/ui/input"
 import { Eye, Edit, Trash2 } from 'lucide-react';
-import { useDebounce } from '@/hooks/use-debounce';
 import { useToast } from '@/hooks/use-toast';
 
 interface FlowerDto {
@@ -19,22 +18,30 @@ interface FlowerDto {
   delFlag: string;
 }
 
+interface PageResponseFlowerDto {
+  flowers: FlowerDto[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  lastPage: boolean;
+}
+
 const API_BASE_URL = 'http://localhost:8080';
 
 const FlowerManagement = () => {
-  const [pageCount, setPageCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const [filteredFlowers, setFilteredFlowers] = useState<FlowerDto[]>([]);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  // 꽃 목록 조회
-  const { data: flowers, isLoading, error } = useQuery({
-    queryKey: ['flowers', currentPage, debouncedSearchTerm],
-    queryFn: async (): Promise<{ flowers: FlowerDto[]; totalCount: number }> => {
+  // 꽃 목록 조회 (백엔드 API에 맞춰 page, size만 사용)
+  const { data: flowerData, isLoading, error } = useQuery({
+    queryKey: ['flowers', currentPage],
+    queryFn: async (): Promise<PageResponseFlowerDto> => {
       const response = await fetch(
-        `${API_BASE_URL}/admin/flowers?page=${currentPage}&search=${debouncedSearchTerm}`
+        `${API_BASE_URL}/admin/flowers?page=${currentPage}&size=12`
       );
       if (!response.ok) {
         throw new Error('꽃 정보를 불러오는데 실패했습니다');
@@ -43,12 +50,15 @@ const FlowerManagement = () => {
     }
   });
 
-  // Update page count when data changes
+  // 검색 필터링 (클라이언트 사이드)
   useEffect(() => {
-    if (flowers) {
-      setPageCount(Math.ceil(flowers.totalCount / 12));
+    if (flowerData && flowerData.flowers) {
+      const filtered = flowerData.flowers.filter(flower =>
+        flower.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredFlowers(filtered);
     }
-  }, [flowers]);
+  }, [flowerData, searchTerm]);
 
   // 페이지 변경 핸들러
   const handlePageClick = (selectedPage: number) => {
@@ -58,7 +68,6 @@ const FlowerManagement = () => {
   // 검색어 변경 핸들러
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    setCurrentPage(0); // 검색 시 첫 페이지로 이동
   };
 
   // 꽃 삭제 mutation
@@ -93,11 +102,6 @@ const FlowerManagement = () => {
     deleteFlowerMutation.mutate(seq);
   };
 
-  useEffect(() => {
-    // debouncedSearchTerm이 변경될 때마다 currentPage를 0으로 설정
-    setCurrentPage(0);
-  }, [debouncedSearchTerm]);
-
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -106,7 +110,7 @@ const FlowerManagement = () => {
     return <div>Error: {error.message}</div>;
   }
 
-  const paginatedFlowers = flowers?.flowers || [];
+  const displayFlowers = searchTerm ? filteredFlowers : (flowerData?.flowers || []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-rose-50 to-pink-50 p-6">
@@ -134,7 +138,7 @@ const FlowerManagement = () => {
 
         {/* 꽃 목록 그리드 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {paginatedFlowers.map((flower) => (
+          {displayFlowers.map((flower) => (
             <Card 
               key={flower.seq} 
               className="bg-white/90 backdrop-blur-sm border-orange-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
@@ -174,7 +178,7 @@ const FlowerManagement = () => {
 
               <CardFooter className="flex gap-2 pt-0">
                 <Link 
-                  to={`/flowers/${flower.seq}?page=${currentPage}&search=${debouncedSearchTerm}`}
+                  to={`/flowers/${flower.seq}?page=${currentPage}&search=${searchTerm}`}
                   className="flex-1"
                 >
                   <Button 
@@ -188,7 +192,7 @@ const FlowerManagement = () => {
                 </Link>
                 
                 <Link 
-                  to={`/flowers/${flower.seq}/edit?page=${currentPage}&search=${debouncedSearchTerm}`}
+                  to={`/flowers/${flower.seq}/edit?page=${currentPage}&search=${searchTerm}`}
                   className="flex-1"
                 >
                   <Button 
@@ -217,9 +221,9 @@ const FlowerManagement = () => {
         </div>
 
         {/* 페이지네이션 */}
-        {pageCount > 1 && (
+        {flowerData && flowerData.totalPages > 1 && !searchTerm && (
           <div className="flex justify-center mt-8">
-            {[...Array(pageCount)].map((_, index) => (
+            {[...Array(flowerData.totalPages)].map((_, index) => (
               <Button
                 key={index}
                 variant={currentPage === index ? "default" : "secondary"}

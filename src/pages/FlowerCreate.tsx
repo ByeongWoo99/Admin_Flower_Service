@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Flower, Save } from 'lucide-react';
+import { ArrowLeft, Flower } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { FlowerForm } from '@/components/flower/FlowerForm';
 
@@ -22,7 +22,7 @@ const FlowerCreate = () => {
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
 
-  // 꽃 생성 mutation
+  // 꽃 생성 mutation (백엔드 API에 맞춰 JSON 문자열로 전송)
   const createFlowerMutation = useMutation({
     mutationFn: async (data: { formData: typeof formData; imageFile: File }) => {
       const formDataToSend = new FormData();
