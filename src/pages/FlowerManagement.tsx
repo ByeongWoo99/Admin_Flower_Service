@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -143,7 +144,7 @@ const FlowerManagement = () => {
                   <img
                     src={flower.imgUrl ? `${API_BASE_URL}${flower.imgUrl}` : '/placeholder.svg'}
                     alt={flower.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.src = '/placeholder.svg';
@@ -221,7 +222,7 @@ const FlowerManagement = () => {
             {[...Array(pageCount)].map((_, index) => (
               <Button
                 key={index}
-                variant="secondary"
+                variant={currentPage === index ? "default" : "secondary"}
                 className={`mx-1 ${currentPage === index ? 'bg-orange-300 text-orange-900' : ''}`}
                 onClick={() => handlePageClick(index)}
               >

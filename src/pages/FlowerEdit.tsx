@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Flower, Heart, Sparkles, Save } from 'lucide-react';
+import { ArrowLeft, Flower, Heart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { FlowerForm } from '@/components/flower/FlowerForm';
 
@@ -121,8 +122,8 @@ const FlowerEdit = () => {
       queryClient.invalidateQueries({ queryKey: ['flowers'] });
       queryClient.invalidateQueries({ queryKey: ['allFlowers'] });
       toast({
-        title: "성공 ✨",
-        description: "꽃 정보가 아름답게 수정되었습니다! 💖",
+        title: "성공",
+        description: "꽃 정보가 성공적으로 수정되었습니다!",
       });
       
       // 원래 페이지로 돌아가기
@@ -177,34 +178,18 @@ const FlowerEdit = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50 p-6">
-        <div className="max-w-2xl mx-auto">
-          <Card className="bg-white/80 backdrop-blur-sm animate-pulse shadow-2xl border-0 rounded-3xl">
-            <CardHeader>
-              <div className="h-6 bg-gradient-to-r from-pink-200 to-rose-200 rounded w-1/3 mx-auto"></div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="h-10 bg-gradient-to-r from-pink-200 to-rose-200 rounded"></div>
-              <div className="h-10 bg-gradient-to-r from-pink-200 to-rose-200 rounded"></div>
-              <div className="h-24 bg-gradient-to-r from-pink-200 to-rose-200 rounded"></div>
-              <div className="h-10 bg-gradient-to-r from-pink-200 to-rose-200 rounded"></div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
+    return <div>Loading...</div>;
   }
 
   if (error || !flower) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50 p-6">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-rose-50 to-pink-50 p-6">
         <div className="max-w-2xl mx-auto text-center">
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-12 shadow-2xl border-0">
-            <Flower className="h-16 w-16 text-rose-400 mx-auto mb-6" />
+          <div className="bg-white/80 backdrop-blur-sm rounded-lg p-12 shadow-lg">
+            <Flower className="h-16 w-16 text-orange-400 mx-auto mb-6" />
             <h1 className="text-3xl font-bold text-gray-800 mb-4">꽃 정보를 불러올 수 없습니다</h1>
             <p className="text-gray-600 mb-8">요청하신 꽃을 찾을 수 없어요</p>
-            <Button onClick={() => navigate('/flowers')} className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white px-8 py-3 rounded-full shadow-lg transform hover:scale-105 transition-all duration-200">
+            <Button onClick={() => navigate('/flowers')} className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-lg shadow-lg">
               <Heart className="h-4 w-4 mr-2" />
               꽃 목록으로 돌아가기
             </Button>
@@ -215,13 +200,13 @@ const FlowerEdit = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-rose-50 to-pink-50 p-6">
       <div className="max-w-2xl mx-auto">
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-8">
           <Button 
             variant="outline" 
-            className="border-pink-200 text-pink-700 hover:bg-pink-50 rounded-full px-6 py-3 shadow-lg backdrop-blur-sm bg-white/80"
+            className="border-orange-200 text-orange-700 hover:bg-orange-50"
             onClick={handleBackToDetail}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -229,21 +214,18 @@ const FlowerEdit = () => {
           </Button>
           
           <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-r from-pink-200 to-rose-200 p-3 rounded-full shadow-lg">
-              <Flower className="h-6 w-6 text-pink-600" />
-            </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">꽃 정보 수정</h1>
-            <Sparkles className="h-6 w-6 text-yellow-400 animate-pulse" />
+            <Flower className="h-8 w-8 text-orange-600" />
+            <h1 className="text-3xl font-bold text-gray-900">꽃 정보 수정</h1>
           </div>
         </div>
 
         {/* 폼 */}
-        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-2xl rounded-3xl overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-pink-100 to-rose-100">
+        <Card className="bg-white/90 backdrop-blur-sm border-orange-100 shadow-xl">
+          <CardHeader className="bg-orange-50">
             <CardTitle className="text-center text-2xl text-gray-900 flex items-center justify-center gap-3">
-              <Heart className="h-6 w-6 text-pink-600" />
+              <Heart className="h-6 w-6 text-orange-600" />
               "{flower.name}" 수정하기
-              <Heart className="h-6 w-6 text-pink-600" />
+              <Heart className="h-6 w-6 text-orange-600" />
             </CardTitle>
           </CardHeader>
           

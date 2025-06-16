@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { ArrowLeft, Edit, Flower, Heart, Trash2, Sparkles } from 'lucide-react';
+import { ArrowLeft, Edit, Flower, Heart, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface FlowerDto {
@@ -92,34 +92,18 @@ const FlowerDetail = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50 p-6">
-        <div className="max-w-4xl mx-auto">
-          <Card className="bg-white/80 backdrop-blur-sm animate-pulse shadow-2xl border-0">
-            <CardHeader>
-              <div className="h-8 bg-gradient-to-r from-pink-200 to-rose-200 rounded w-1/3 mb-4"></div>
-              <div className="h-64 bg-gradient-to-r from-pink-200 to-rose-200 rounded"></div>
-            </CardHeader>
-            <CardContent>
-              <div className="h-6 bg-gradient-to-r from-pink-200 to-rose-200 rounded w-1/4 mb-4"></div>
-              <div className="h-4 bg-gradient-to-r from-pink-200 to-rose-200 rounded w-full mb-2"></div>
-              <div className="h-4 bg-gradient-to-r from-pink-200 to-rose-200 rounded w-3/4"></div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
+    return <div>Loading...</div>;
   }
 
   if (error || !flower) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50 p-6">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-rose-50 to-pink-50 p-6">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-12 shadow-2xl border-0">
-            <Flower className="h-16 w-16 text-rose-400 mx-auto mb-6" />
+          <div className="bg-white/80 backdrop-blur-sm rounded-lg p-12 shadow-lg">
+            <Flower className="h-16 w-16 text-orange-400 mx-auto mb-6" />
             <h1 className="text-3xl font-bold text-gray-800 mb-4">꽃 정보를 불러올 수 없습니다</h1>
             <p className="text-gray-600 mb-8">요청하신 꽃을 찾을 수 없어요</p>
-            <Button onClick={() => navigate('/flowers')} className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white px-8 py-3 rounded-full shadow-lg transform hover:scale-105 transition-all duration-200">
+            <Button onClick={() => navigate('/flowers')} className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-lg shadow-lg">
               <Heart className="h-4 w-4 mr-2" />
               꽃 목록으로 돌아가기
             </Button>
@@ -130,13 +114,13 @@ const FlowerDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-rose-50 to-pink-50 p-6">
       <div className="max-w-4xl mx-auto">
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-8">
           <Button 
             variant="outline" 
-            className="border-pink-200 text-pink-700 hover:bg-pink-50 rounded-full px-6 py-3 shadow-lg backdrop-blur-sm bg-white/80"
+            className="border-orange-200 text-orange-700 hover:bg-orange-50"
             onClick={handleBackToList}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -145,7 +129,7 @@ const FlowerDetail = () => {
           
           <div className="flex gap-3">
             <Link to={`/flowers/${flower.seq}/edit?page=${page}&search=${search}`}>
-              <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-full px-6 py-3 shadow-lg transform hover:scale-105 transition-all duration-200">
+              <Button className="bg-blue-500 hover:bg-blue-600 text-white">
                 <Edit className="h-4 w-4 mr-2" />
                 수정하기
               </Button>
@@ -154,75 +138,63 @@ const FlowerDetail = () => {
         </div>
 
         {/* 꽃 상세 정보 */}
-        <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-2xl rounded-3xl overflow-hidden">
-          <CardHeader className="text-center pb-6 bg-gradient-to-r from-pink-100 to-rose-100">
-            <div className="flex justify-center mb-6">
-              <div className="bg-gradient-to-r from-pink-200 to-rose-200 p-4 rounded-full shadow-lg">
-                <Flower className="h-12 w-12 text-pink-600" />
-              </div>
-            </div>
-            <CardTitle className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent mb-4">
+        <Card className="bg-white/90 backdrop-blur-sm border-orange-100 shadow-xl">
+          <CardHeader className="text-center pb-6">
+            <CardTitle className="text-3xl font-bold text-gray-900 mb-4">
               {flower.name}
             </CardTitle>
             <div className="flex justify-center gap-3">
-              <Badge variant="secondary" className="bg-gradient-to-r from-pink-200 to-rose-200 text-pink-800 text-lg px-6 py-2 rounded-full shadow-md">
+              <Badge variant="secondary" className="bg-orange-100 text-orange-800">
                 <Heart className="h-4 w-4 mr-2" />
                 {flower.emotion}
               </Badge>
               {flower.delFlag === 'Y' && (
-                <Badge variant="destructive" className="bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-full px-6 py-2 shadow-md">
+                <Badge variant="destructive">
                   삭제된 꽃
                 </Badge>
               )}
             </div>
           </CardHeader>
           
-          <CardContent className="space-y-8 p-8">
+          <CardContent className="space-y-8">
             {/* 꽃 이미지 */}
             <div className="flex justify-center">
-              <div className="relative">
-                <div className="w-[512px] h-[512px] bg-gradient-to-br from-pink-100 to-rose-100 rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
-                  <img
-                    src={flower.imgUrl ? `${API_BASE_URL}${flower.imgUrl}` : '/placeholder.svg'}
-                    alt={flower.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = '/placeholder.svg';
-                      console.log('Image load failed, using placeholder');
-                    }}
-                  />
-                </div>
-                <div className="absolute -top-2 -right-2">
-                  <Sparkles className="h-8 w-8 text-yellow-400 animate-pulse" />
-                </div>
+              <div className="w-[512px] h-[512px] bg-orange-50 rounded-lg overflow-hidden shadow-lg border-2 border-orange-100">
+                <img
+                  src={flower.imgUrl ? `${API_BASE_URL}${flower.imgUrl}` : '/placeholder.svg'}
+                  alt={flower.name}
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = '/placeholder.svg';
+                    console.log('Image load failed, using placeholder');
+                  }}
+                />
               </div>
             </div>
 
             {/* 꽃말 */}
-            <div className="bg-gradient-to-r from-pink-50 to-rose-50 rounded-2xl p-8 shadow-lg border border-pink-100">
-              <h3 className="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
-                <div className="bg-gradient-to-r from-pink-400 to-rose-400 p-2 rounded-full mr-4">
-                  <Flower className="h-6 w-6 text-white" />
-                </div>
+            <div className="bg-orange-50 rounded-lg p-6 shadow-sm border border-orange-100">
+              <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                <Flower className="h-5 w-5 text-orange-600 mr-2" />
                 꽃말
               </h3>
-              <p className="text-gray-700 leading-relaxed text-lg font-medium bg-white/80 p-6 rounded-xl shadow-sm">
+              <p className="text-gray-700 leading-relaxed text-lg">
                 "{flower.meaning}"
               </p>
             </div>
 
             {/* 상세 정보 */}
             <div className="grid md:grid-cols-2 gap-6">
-              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 shadow-lg border border-purple-100">
-                <h4 className="font-semibold text-gray-900 mb-3 text-lg">번호</h4>
-                <p className="text-gray-600 text-xl">{flower.seq}</p>
+              <div className="bg-gray-50 rounded-lg p-6 shadow-sm">
+                <h4 className="font-semibold text-gray-900 mb-3">번호</h4>
+                <p className="text-gray-600">{flower.seq}</p>
               </div>
-              <div className="bg-gradient-to-br from-rose-50 to-pink-50 rounded-2xl p-6 shadow-lg border border-rose-100">
+              <div className="bg-gray-50 rounded-lg p-6 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-3 text-lg">상태</h4>
-                    <p className="text-gray-600 text-xl">
+                    <h4 className="font-semibold text-gray-900 mb-3">상태</h4>
+                    <p className="text-gray-600">
                       {flower.delFlag === 'Y' ? '삭제됨' : '활성'}
                     </p>
                   </div>
@@ -232,27 +204,27 @@ const FlowerDetail = () => {
                         <Button 
                           variant="destructive" 
                           size="sm"
-                          className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 rounded-full px-4 py-2 shadow-md"
+                          className="bg-red-500 hover:bg-red-600"
                         >
                           <Trash2 className="h-4 w-4 mr-2" />
                           삭제
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl rounded-2xl">
+                      <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle className="text-xl font-bold text-gray-900">꽃 삭제</AlertDialogTitle>
-                          <AlertDialogDescription className="text-gray-600">
+                          <AlertDialogTitle>꽃 삭제</AlertDialogTitle>
+                          <AlertDialogDescription>
                             정말로 "{flower.name}"을(를) 삭제하시겠습니까? 
                             <br />
                             삭제된 꽃은 복구할 수 없습니다.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel className="rounded-full">취소</AlertDialogCancel>
+                          <AlertDialogCancel>취소</AlertDialogCancel>
                           <AlertDialogAction 
                             onClick={handleDelete}
                             disabled={deleteFlowerMutation.isPending}
-                            className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 rounded-full"
+                            className="bg-red-500 hover:bg-red-600"
                           >
                             {deleteFlowerMutation.isPending ? '삭제 중...' : '삭제'}
                           </AlertDialogAction>
