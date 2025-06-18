@@ -160,7 +160,7 @@ const FlowerDetail = () => {
             <div className="flex justify-center">
               <div className="w-[512px] h-[512px] bg-orange-50 rounded-lg overflow-hidden shadow-lg border-2 border-orange-100">
                 <img
-                  src={flower.imgUrl ? `${API_BASE_URL}${flower.imgUrl}` : '/placeholder.svg'}
+                  src={flower.imgUrl || '/placeholder.svg'}
                   alt={flower.name}
                   className="w-full h-full object-contain"
                   onError={(e) => {

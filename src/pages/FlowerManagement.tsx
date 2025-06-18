@@ -176,7 +176,7 @@ const FlowerManagement = () => {
               <CardHeader className="pb-3">
                 <div className="w-full h-48 bg-orange-50 rounded-lg overflow-hidden">
                   <img
-                    src={flower.imgUrl ? `${API_BASE_URL}${flower.imgUrl}` : '/placeholder.svg'}
+                    src={flower.imgUrl || '/placeholder.svg'}
                     alt={flower.name}
                     className="w-full h-full object-contain"
                     onError={(e) => {
