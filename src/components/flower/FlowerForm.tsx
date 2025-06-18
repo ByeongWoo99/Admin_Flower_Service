@@ -137,11 +137,11 @@ export const FlowerForm: React.FC<FlowerFormProps> = ({
       {imagePreview && (
         <div>
           <Label className="text-gray-700">이미지 미리보기</Label>
-          <div className="mt-2 w-full h-48 bg-orange-50 rounded-lg overflow-hidden">
+          <div className="mt-2 w-[512px] h-[512px] mx-auto bg-orange-50 rounded-lg overflow-hidden border-2 border-orange-100">
             <img
               src={imagePreview}
               alt="미리보기"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';

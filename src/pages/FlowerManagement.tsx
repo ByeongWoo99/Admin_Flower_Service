@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -6,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from "@/components/ui/input"
-import { Eye, Edit, Trash2 } from 'lucide-react';
+import { Eye, Edit, Trash2, Home } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface FlowerDto {
@@ -29,10 +28,13 @@ interface PageResponseFlowerDto {
 
 const API_BASE_URL = 'http://localhost:8080';
 
+const EMOTIONS = ["슬픔", "그리움", "감사", "후회", "미안함(사죄)", "희망", "추모+존경"];
+
 const FlowerManagement = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  const [selectedEmotion, setSelectedEmotion] = useState<string>('');
   const [filteredFlowers, setFilteredFlowers] = useState<FlowerDto[]>([]);
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -54,15 +56,26 @@ const FlowerManagement = () => {
     }
   });
 
-  // 검색 필터링 (클라이언트 사이드)
+  // 검색 및 감정 필터링 (클라이언트 사이드)
   useEffect(() => {
     if (flowerData && flowerData.flowers) {
-      const filtered = flowerData.flowers.filter(flower =>
-        flower.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      let filtered = flowerData.flowers;
+      
+      // 검색어 필터링
+      if (searchTerm) {
+        filtered = filtered.filter(flower =>
+          flower.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+      
+      // 감정 필터링
+      if (selectedEmotion) {
+        filtered = filtered.filter(flower => flower.emotion === selectedEmotion);
+      }
+      
       setFilteredFlowers(filtered);
     }
-  }, [flowerData, searchTerm]);
+  }, [flowerData, searchTerm, selectedEmotion]);
 
   // 페이지 변경 핸들러
   const handlePageClick = (selectedPage: number) => {
@@ -84,6 +97,23 @@ const FlowerManagement = () => {
     params.set('page', '0'); // 검색 시 첫 페이지로 이동
     if (newSearchTerm) {
       params.set('search', newSearchTerm);
+    }
+    setSearchParams(params);
+  };
+
+  // 감정 필터 핸들러
+  const handleEmotionFilter = (emotion: string) => {
+    if (selectedEmotion === emotion) {
+      setSelectedEmotion(''); // 같은 감정 클릭 시 필터 해제
+    } else {
+      setSelectedEmotion(emotion);
+    }
+    
+    // 필터 변경 시 첫 페이지로 이동
+    const params = new URLSearchParams();
+    params.set('page', '0');
+    if (searchTerm) {
+      params.set('search', searchTerm);
     }
     setSearchParams(params);
   };
@@ -139,7 +169,7 @@ const FlowerManagement = () => {
     return <div>Error: {error.message}</div>;
   }
 
-  const displayFlowers = searchTerm ? filteredFlowers : (flowerData?.flowers || []);
+  const displayFlowers = (searchTerm || selectedEmotion) ? filteredFlowers : (flowerData?.flowers || []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-rose-50 to-pink-50 p-6">
@@ -147,6 +177,12 @@ const FlowerManagement = () => {
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
+            <Link to="/">
+              <Button variant="outline" className="border-orange-200 text-orange-700 hover:bg-orange-50">
+                <Home className="h-4 w-4 mr-2" />
+                홈
+              </Button>
+            </Link>
             <h1 className="text-3xl font-bold text-gray-900">꽃 관리</h1>
           </div>
           <Link to="/flowers/new">
@@ -163,6 +199,29 @@ const FlowerManagement = () => {
             onChange={handleSearchChange}
             className="w-full max-w-md bg-white/80 backdrop-blur-sm border-orange-100 shadow-sm"
           />
+        </div>
+
+        {/* 감정 필터 버튼들 */}
+        <div className="mb-6">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant={selectedEmotion === '' ? "default" : "outline"}
+              onClick={() => setSelectedEmotion('')}
+              className="bg-gray-500 hover:bg-gray-600 text-white"
+            >
+              전체
+            </Button>
+            {EMOTIONS.map((emotion) => (
+              <Button
+                key={emotion}
+                variant={selectedEmotion === emotion ? "default" : "outline"}
+                onClick={() => handleEmotionFilter(emotion)}
+                className={selectedEmotion === emotion ? "bg-orange-500 hover:bg-orange-600" : "border-orange-200 text-orange-700 hover:bg-orange-50"}
+              >
+                {emotion}
+              </Button>
+            ))}
+          </div>
         </div>
 
         {/* 꽃 목록 그리드 */}
@@ -253,7 +312,7 @@ const FlowerManagement = () => {
         </div>
 
         {/* 페이지네이션 */}
-        {flowerData && flowerData.totalPages > 1 && !searchTerm && (
+        {flowerData && flowerData.totalPages > 1 && !searchTerm && !selectedEmotion && (
           <div className="flex justify-center mt-8">
             {[...Array(flowerData.totalPages)].map((_, index) => (
               <Button
