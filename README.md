@@ -1,58 +1,41 @@
-# Welcome to your Lovable project
+## 프로젝트 개요
+이 프로젝트는 꽃의 사진, 꽃말, 꽃 이름 등의 다양한 정보를 저장하고 관리할 수 있습니다.
 
-## Project info
+아래와 같은 기능을 통해 꽃 데이터를 손쉽게 CRUD할 수 있습니다:
+- 꽃 목록 조회  
+- 꽃 상세 정보 확인 (사진, 꽃말, 이름 등)  
+- 새로운 꽃 정보 생성 및 저장  
+- 기존 꽃 정보 수정  
+- 꽃 정보 삭제(Soft Delete)
 
-**URL**: https://lovable.dev/projects/62aafae3-9a00-43b4-9fe0-aa15a40b1777
-
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/62aafae3-9a00-43b4-9fe0-aa15a40b1777) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+## 프로젝트 사용법
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# 프로젝트의 Git URL을 사용하여 레포지토리를 클론합니다.
+git clone <https://github.com/ByeongWoo99/memorial-flower-garden.git>
 
-# Step 2: Navigate to the project directory.
+# 프로젝트 디렉토리로 이동합니다.
 cd <YOUR_PROJECT_NAME>
 
-# Step 3: Install the necessary dependencies.
+# 필요한 종속성을 설치합니다.
 npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# 서버를 시작합니다.
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## API 목록
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+| 기능         | HTTP Method | Api Path                         |
+| ------------ | ----------- | -------------------------------- |
+| 꽃 상세 조회 | GET         | `/flowers/${seq}?page=${page}`     |
+| 꽃 목록 조회 | GET         | `/flowers`                    |
+| 꽃 생성      | POST        | `/flowers/new`                   |
+| 꽃 정보 수정 | PATCH       | `/flowers/${flower.seq}/edit?page=${page}&search=${search}`                   |
+| 꽃 삭제      | DELETE      | `/admin/flowers/${seq}`        |
 
-**Use GitHub Codespaces**
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
+## 사용된 기술 스택
 
 - Vite
 - TypeScript
@@ -60,14 +43,3 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/62aafae3-9a00-43b4-9fe0-aa15a40b1777) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
