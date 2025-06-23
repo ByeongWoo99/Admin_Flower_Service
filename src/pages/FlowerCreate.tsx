@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, Link } from 'react-router-dom';
@@ -7,8 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Flower } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { FlowerForm } from '@/components/flower/FlowerForm';
-
-const API_BASE_URL = 'http://localhost:8080';
+import { API_CONFIG } from '@/config/api';
 
 const FlowerCreate = () => {
   const navigate = useNavigate();
@@ -37,7 +35,7 @@ const FlowerCreate = () => {
       formDataToSend.append('flower', flowerJson);
       formDataToSend.append('imageFile', data.imageFile);
 
-      const response = await fetch(`${API_BASE_URL}/admin/flowers`, {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/admin/flowers`, {
         method: 'POST',
         body: formDataToSend,
       });

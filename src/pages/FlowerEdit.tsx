@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
@@ -7,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Flower } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { FlowerForm } from '@/components/flower/FlowerForm';
+import { API_CONFIG } from '@/config/api';
 
 interface FlowerDto {
   seq: number;
@@ -16,8 +16,6 @@ interface FlowerDto {
   imgUrl: string;
   delFlag: string;
 }
-
-const API_BASE_URL = 'http://localhost:8080';
 
 const FlowerEdit = () => {
   const { seq } = useParams<{ seq: string }>();
@@ -39,7 +37,7 @@ const FlowerEdit = () => {
   const { data: flower, isLoading } = useQuery({
     queryKey: ['flower', seq],
     queryFn: async (): Promise<FlowerDto> => {
-      const response = await fetch(`${API_BASE_URL}/admin/flowers/${seq}`);
+      const response = await fetch(`${API_CONFIG.BASE_URL}/admin/flowers/${seq}`);
       if (!response.ok) {
         throw new Error('꽃 정보를 불러오는데 실패했습니다');
       }
@@ -86,7 +84,7 @@ const FlowerEdit = () => {
       formDataToSend.append('flower', flowerJson);
       formDataToSend.append('imageFile', data.imageFile);
 
-      const response = await fetch(`${API_BASE_URL}/admin/flowers/${seq}`, {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/admin/flowers/${seq}`, {
         method: 'PATCH',
         body: formDataToSend,
       });
@@ -117,7 +115,7 @@ const FlowerEdit = () => {
   // 꽃 수정 mutation (텍스트만)
   const updateFlowerMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const response = await fetch(`${API_BASE_URL}/admin/flowers/${seq}`, {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/admin/flowers/${seq}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from "@/components/ui/input"
 import { Eye, Edit, Trash2, Home } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { API_CONFIG } from '@/config/api';
 
 interface FlowerDto {
   seq: number;
@@ -25,8 +26,6 @@ interface PageResponseFlowerDto {
   totalPages: number;
   lastPage: boolean;
 }
-
-const API_BASE_URL = 'http://localhost:8080';
 
 const EMOTIONS = ["슬픔", "그리움", "감사", "후회", "미안함(사죄)", "희망", "추모+존경"];
 
@@ -47,7 +46,7 @@ const FlowerManagement = () => {
     queryKey: ['flowers', currentPage],
     queryFn: async (): Promise<PageResponseFlowerDto> => {
       const response = await fetch(
-        `${API_BASE_URL}/admin/flowers?page=${currentPage}&size=12`
+        `${API_CONFIG.BASE_URL}/admin/flowers?page=${currentPage}&size=12`
       );
       if (!response.ok) {
         throw new Error('꽃 정보를 불러오는데 실패했습니다');
@@ -131,7 +130,7 @@ const FlowerManagement = () => {
   // 꽃 삭제 mutation
   const deleteFlowerMutation = useMutation({
     mutationFn: async (seq: number) => {
-      const response = await fetch(`${API_BASE_URL}/admin/flowers/${seq}`, {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/admin/flowers/${seq}`, {
         method: 'DELETE',
       });
       if (!response.ok) {

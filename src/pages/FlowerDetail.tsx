@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -8,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { ArrowLeft, Edit, Flower, Heart, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { API_CONFIG } from '@/config/api';
 
 interface FlowerDto {
   seq: number;
@@ -17,8 +17,6 @@ interface FlowerDto {
   imgUrl: string;
   delFlag: string;
 }
-
-const API_BASE_URL = 'http://localhost:8080';
 
 const FlowerDetail = () => {
   const { seq } = useParams<{ seq: string }>();
@@ -32,7 +30,7 @@ const FlowerDetail = () => {
   const { data: flower, isLoading, error } = useQuery({
     queryKey: ['flower', seq],
     queryFn: async (): Promise<FlowerDto> => {
-      const response = await fetch(`${API_BASE_URL}/admin/flowers/${seq}`);
+      const response = await fetch(`${API_CONFIG.BASE_URL}/admin/flowers/${seq}`);
       if (!response.ok) {
         throw new Error('꽃 정보를 불러오는데 실패했습니다');
       }
@@ -44,7 +42,7 @@ const FlowerDetail = () => {
   // 꽃 삭제 mutation
   const deleteFlowerMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch(`${API_BASE_URL}/admin/flowers/${seq}`, {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/admin/flowers/${seq}`, {
         method: 'DELETE',
       });
       if (!response.ok) {
