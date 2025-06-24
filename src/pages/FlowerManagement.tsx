@@ -33,7 +33,7 @@ const FlowerManagement = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
-  const [selectedEmotion, setSelectedEmotion] = useState<string>('');
+  const [selectedEmotion, setSelectedEmotion] = useState<string>(searchParams.get('emotion') || '');
   const [filteredFlowers, setFilteredFlowers] = useState<FlowerDto[]>([]);
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -58,30 +58,51 @@ const FlowerManagement = () => {
   // 검색 및 감정 필터링 (클라이언트 사이드)
   useEffect(() => {
     if (flowerData && flowerData.flowers) {
-      let filtered = flowerData.flowers;
+      let filtered = [...flowerData.flowers];
+      
+      console.log('Original flowers:', filtered);
+      console.log('Search term:', searchTerm);
+      console.log('Selected emotion:', selectedEmotion);
       
       // 검색어 필터링
-      if (searchTerm) {
+      if (searchTerm.trim()) {
         filtered = filtered.filter(flower =>
-          flower.name.toLowerCase().includes(searchTerm.toLowerCase())
+          flower.name.toLowerCase().includes(searchTerm.toLowerCase().trim())
         );
+        console.log('After search filter:', filtered);
       }
       
       // 감정 필터링
-      if (selectedEmotion) {
-        filtered = filtered.filter(flower => flower.emotion === selectedEmotion);
+      if (selectedEmotion.trim()) {
+        filtered = filtered.filter(flower => {
+          const match = flower.emotion === selectedEmotion;
+          console.log(`Flower ${flower.name} emotion: "${flower.emotion}", selected: "${selectedEmotion}", match: ${match}`);
+          return match;
+        });
+        console.log('After emotion filter:', filtered);
       }
       
       setFilteredFlowers(filtered);
     }
   }, [flowerData, searchTerm, selectedEmotion]);
 
+  // URL 파라미터 초기화
+  useEffect(() => {
+    const emotion = searchParams.get('emotion');
+    if (emotion && emotion !== selectedEmotion) {
+      setSelectedEmotion(emotion);
+    }
+  }, [searchParams]);
+
   // 페이지 변경 핸들러
   const handlePageClick = (selectedPage: number) => {
     const params = new URLSearchParams();
     params.set('page', selectedPage.toString());
-    if (searchTerm) {
+    if (searchTerm.trim()) {
       params.set('search', searchTerm);
+    }
+    if (selectedEmotion.trim()) {
+      params.set('emotion', selectedEmotion);
     }
     setSearchParams(params);
   };
@@ -94,25 +115,35 @@ const FlowerManagement = () => {
     // 검색어 변경 시 URL 업데이트
     const params = new URLSearchParams();
     params.set('page', '0'); // 검색 시 첫 페이지로 이동
-    if (newSearchTerm) {
+    if (newSearchTerm.trim()) {
       params.set('search', newSearchTerm);
+    }
+    if (selectedEmotion.trim()) {
+      params.set('emotion', selectedEmotion);
     }
     setSearchParams(params);
   };
 
   // 감정 필터 핸들러
   const handleEmotionFilter = (emotion: string) => {
+    let newSelectedEmotion = '';
+    
     if (selectedEmotion === emotion) {
-      setSelectedEmotion(''); // 같은 감정 클릭 시 필터 해제
+      newSelectedEmotion = ''; // 같은 감정 클릭 시 필터 해제
     } else {
-      setSelectedEmotion(emotion);
+      newSelectedEmotion = emotion;
     }
     
-    // 필터 변경 시 첫 페이지로 이동
+    setSelectedEmotion(newSelectedEmotion);
+    
+    // 필터 변경 시 첫 페이지로 이동 및 URL 업데이트
     const params = new URLSearchParams();
     params.set('page', '0');
-    if (searchTerm) {
+    if (searchTerm.trim()) {
       params.set('search', searchTerm);
+    }
+    if (newSelectedEmotion.trim()) {
+      params.set('emotion', newSelectedEmotion);
     }
     setSearchParams(params);
   };
@@ -121,8 +152,11 @@ const FlowerManagement = () => {
   const handleFlowerClick = (seq: number) => {
     const params = new URLSearchParams();
     params.set('page', currentPage.toString());
-    if (searchTerm) {
+    if (searchTerm.trim()) {
       params.set('search', searchTerm);
+    }
+    if (selectedEmotion.trim()) {
+      params.set('emotion', selectedEmotion);
     }
     navigate(`/flowers/${seq}?${params.toString()}`);
   };
@@ -168,7 +202,7 @@ const FlowerManagement = () => {
     return <div>Error: {error.message}</div>;
   }
 
-  const displayFlowers = (searchTerm || selectedEmotion) ? filteredFlowers : (flowerData?.flowers || []);
+  const displayFlowers = (searchTerm.trim() || selectedEmotion.trim()) ? filteredFlowers : (flowerData?.flowers || []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-rose-50 to-pink-50 p-6">
@@ -205,7 +239,7 @@ const FlowerManagement = () => {
           <div className="flex flex-wrap gap-2">
             <Button
               variant={selectedEmotion === '' ? "default" : "outline"}
-              onClick={() => setSelectedEmotion('')}
+              onClick={() => handleEmotionFilter('')}
               className="bg-gray-500 hover:bg-gray-600 text-white"
             >
               전체
@@ -266,7 +300,7 @@ const FlowerManagement = () => {
 
               <CardFooter className="flex gap-2 pt-0">
                 <Link 
-                  to={`/flowers/${flower.seq}?page=${currentPage}&search=${searchTerm}`}
+                  to={`/flowers/${flower.seq}?page=${currentPage}&search=${searchTerm}&emotion=${selectedEmotion}`}
                   className="flex-1"
                   onClick={(e) => e.stopPropagation()}
                 >
@@ -281,7 +315,7 @@ const FlowerManagement = () => {
                 </Link>
                 
                 <Link 
-                  to={`/flowers/${flower.seq}/edit?page=${currentPage}&search=${searchTerm}`}
+                  to={`/flowers/${flower.seq}/edit?page=${currentPage}&search=${searchTerm}&emotion=${selectedEmotion}`}
                   className="flex-1"
                   onClick={(e) => e.stopPropagation()}
                 >
@@ -310,8 +344,15 @@ const FlowerManagement = () => {
           ))}
         </div>
 
-        {/* 페이지네이션 */}
-        {flowerData && flowerData.totalPages > 1 && !searchTerm && !selectedEmotion && (
+        {/* 필터링 결과가 없을 때 메시지 */}
+        {(searchTerm.trim() || selectedEmotion.trim()) && displayFlowers.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">검색 조건에 맞는 꽃이 없습니다.</p>
+          </div>
+        )}
+
+        {/* 페이지네이션 - 필터링이 없을 때만 표시 */}
+        {flowerData && flowerData.totalPages > 1 && !searchTerm.trim() && !selectedEmotion.trim() && (
           <div className="flex justify-center mt-8">
             {[...Array(flowerData.totalPages)].map((_, index) => (
               <Button
