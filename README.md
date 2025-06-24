@@ -5,6 +5,9 @@
 
 [백엔드 GitHub 주소](https://github.com/ByeongWoo99/Flower_Service)
 
+#### 해당 프로젝트는 러버블을 이용해서 개발했습니다.
+[Lovable](https://lovable.dev/)
+
 ## 주요 기능 (프론트엔드)
 - **꽃 목록 조회**: 전체 꽃 데이터를 카드, 리스트 등 다양한 UI 컴포넌트로 표시
 - **꽃 상세 정보 확인**: 사진, 꽃말, 이름 등의 세부 정보를 상세 페이지로 제공
