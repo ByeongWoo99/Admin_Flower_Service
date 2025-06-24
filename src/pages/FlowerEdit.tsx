@@ -50,11 +50,12 @@ const FlowerEdit = () => {
   // 폼 데이터 초기화
   useEffect(() => {
     if (flower) {
+      console.log('Flower data loaded:', flower);
       setFormData({
-        name: flower.name,
-        emotion: flower.emotion,
-        meaning: flower.meaning,
-        delFlag: flower.delFlag
+        name: flower.name || '',
+        emotion: flower.emotion || '',
+        meaning: flower.meaning || '',
+        delFlag: flower.delFlag || 'N'
       });
     }
   }, [flower]);
