@@ -21,7 +21,7 @@
 ## 프로젝트 실행법
 
 ```sh
-# 프로젝트의 Git URL을 사용하여 레포지토리를 클론
+# 프로젝트의 Git URL을 사용하여 레포지토리 클론
 git clone <https://github.com/ByeongWoo99/Admin_Flower_Service.git>
 
 # 프로젝트 디렉토리로 이동
@@ -30,7 +30,7 @@ cd <YOUR_PROJECT_NAME>
 # 의존성 설치
 npm i
 
-# 서버를 시작
+# 서버 시작
 npm run dev
 ```
 
