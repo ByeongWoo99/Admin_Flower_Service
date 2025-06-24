@@ -29,7 +29,8 @@ const FlowerEdit = () => {
   const [formData, setFormData] = useState({
     name: '',
     emotion: '',
-    meaning: ''
+    meaning: '',
+    delFlag: 'N'
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
 
@@ -52,7 +53,8 @@ const FlowerEdit = () => {
       setFormData({
         name: flower.name,
         emotion: flower.emotion,
-        meaning: flower.meaning
+        meaning: flower.meaning,
+        delFlag: flower.delFlag
       });
     }
   }, [flower]);
@@ -78,7 +80,8 @@ const FlowerEdit = () => {
       const flowerJson = JSON.stringify({
         name: data.formData.name,
         emotion: data.formData.emotion,
-        meaning: data.formData.meaning
+        meaning: data.formData.meaning,
+        delFlag: data.formData.delFlag
       });
       
       formDataToSend.append('flower', flowerJson);
@@ -123,7 +126,8 @@ const FlowerEdit = () => {
         body: JSON.stringify({
           name: data.name,
           emotion: data.emotion,
-          meaning: data.meaning
+          meaning: data.meaning,
+          delFlag: data.delFlag
         }),
       });
       
@@ -212,6 +216,8 @@ const FlowerEdit = () => {
               isSubmitting={updateFlowerWithImageMutation.isPending || updateFlowerMutation.isPending}
               submitButtonText="수정하기"
               onCancel={handleBackToList}
+              isEdit={true}
+              existingImageUrl={flower?.imgUrl}
             />
           </CardContent>
         </Card>
