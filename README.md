@@ -73,3 +73,29 @@ src/App.tsx파일에 설정된 주소 목록입니다.
 - shadcn-ui
 - Tailwind CSS
 
+## 실행 화면
+
+### 메인 페이지
+- 꽃 관리 시스템의 메인 화면입니다.
+
+![메인 페이지](./images/mainPage.jpg)
+
+### 꽃 목록 페이지
+- 전체 꽃 데이터를 카드 형태로 조회할 수 있는 화면입니다.
+
+![꽃 목록 페이지](./images/flowerList.jpg)
+
+### 꽃 상세 정보
+- 꽃 하나의 상세한 정보를 보여주는 페이지입니다.
+
+![꽃 상세 페이지](./images/flowerDetailPage.jpg)
+
+### 꽃 등록 페이지
+- 새로운 꽃 정보를 입력하는 페이지입니다.
+
+![꽃 등록 페이지](./images/createFlowerPage.jpg)
+
+### 꽃 수정 페이지
+- 등록된 꽃 정보를 수정하는 페이지입니다.
+
+![꽃 수정 페이지](./images/updateFlowerPage.jpg)
